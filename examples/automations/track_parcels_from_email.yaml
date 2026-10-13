@@ -1,0 +1,119 @@
+# Extract Amazon Shipping tracking codes from incoming e-mail and register them
+# with `amazon_shipping.track_parcel`, so parcels start tracking the moment the
+# shipping confirmation lands in your inbox — no manual entry.
+#
+# Requirements:
+#   - one or more core IMAP config entries with "text" enabled under
+#     "message data" and the max message size raised (carrier mails are
+#     long) — full setup guide and pitfalls: track_parcels_from_email.md
+#   - optional: an `ai_task` entity for the AI fallback branch; delete
+#     the whole `else:` block if you don't use one
+#   - PRIVACY: by default this fires on EVERY incoming mail and (with the
+#     AI branch) can send mail bodies to your AI Task. Scope the IMAP
+#     search to the carrier's sender first — see "Scope & privacy" in the .md.
+#
+# The regex is deliberately written without backslashes (`(?<![0-9A-Za-z])`
+# instead of `\b`, `[0-9]` instead of `\d`): Jinja treats `\b` inside a
+# string literal as a backspace escape, so the pattern would silently
+# never match.
+
+alias: "Amazon Shipping: track from e-mail"
+description: >-
+  Listens to imap_content events from all IMAP entries. Fast regex path for
+  Amazon Shipping tracking codes; optional AI fallback for mails whose layout the
+  regex does not recognise.
+mode: queued
+max: 10
+
+triggers:
+  - trigger: event
+    event_type: imap_content
+
+variables:
+  sender: "{{ trigger.event.data.sender | default('') | lower }}"
+  subject: "{{ trigger.event.data.subject | default('') }}"
+  body: "{{ trigger.event.data.text | default('') }}"
+  content: "{{ subject ~ ' ' ~ body }}"
+  # Anchored on the prefixes Amazon Shipping parcels are known to use: TBA/TBC/TBM
+  # plus 12 digits, UK/GB plus 10 digits. Other shapes are accepted by the
+  # integration; add yours to the alternation. Retail order mails carry the same
+  # shapes and show as unknown here.
+  amazon_shipping_codes: >-
+    {{ content | regex_findall('(?<![0-9A-Za-z])(?:(?:TBA|TBC|TBM)[0-9]{12}|(?:UK|GB)[0-9]{10})(?![0-9A-Za-z])')
+       | unique | list }}
+  # Keyword gate for the AI fallback — localise to your language(s).
+  is_parcel_mail: >-
+    {{ content | lower is search('package|shipped|out for delivery|track|shipment|delivery') }}
+
+conditions:
+  # initial=true means "new message"; false means a duplicate trigger of
+  # the SAME message (e.g. after a reconnect) — requiring it is free dedup.
+  - condition: template
+    value_template: "{{ trigger.event.data.initial | default(true) }}"
+  - condition: template
+    value_template: "{{ is_parcel_mail or amazon_shipping_codes | count > 0 }}"
+
+actions:
+  - repeat:
+      for_each: "{{ amazon_shipping_codes }}"
+      sequence:
+        - action: amazon_shipping.track_parcel
+          data:
+            tracking_code: "{{ repeat.item }}"
+  - if:
+      - condition: template
+        value_template: "{{ amazon_shipping_codes | count > 0 }}"
+    then:
+      - action: notify.mobile_app_your_phone
+        data:
+          title: "📦 Amazon Shipping parcel picked up from mail"
+          message: >-
+            {{ amazon_shipping_codes | join(', ') }} (mail from {{ sender }})
+    else:
+      # ---- Optional AI fallback — delete this block if you have no ai_task entity ----
+      - action: ai_task.generate_data
+        data:
+          task_name: amazon_shipping-tracking-code-extraction
+          entity_id: ai_task.your_ai_task_entity
+          instructions: >-
+            Below is an e-mail. Determine whether it contains an Amazon Shipping
+            parcel tracking code. Amazon Shipping codes are
+            8-40 uppercase letters and digits, usually starting with a
+            prefix such as TBA or UK. Only return a real tracking
+            trace code, never an order, customer or invoice number. If the
+            mail is from a different carrier, answer 'other'. When in
+            doubt: 'none'.
+
+            Sender: {{ sender }}
+            Subject: {{ subject }}
+            Body:
+            {{ body[:6000] }}
+          structure:
+            carrier:
+              description: Whether an Amazon Shipping tracking code was found
+              required: true
+              selector:
+                select:
+                  options: ["amazon_shipping", "other", "none"]
+            tracking_code:
+              description: The tracking code, or empty if none
+              required: false
+              selector:
+                text:
+        response_variable: ai_result
+      - choose:
+          - conditions: "{{ ai_result.data.carrier == 'amazon_shipping' and (ai_result.data.tracking_code | default('') | trim) != '' }}"
+            sequence:
+              - action: amazon_shipping.track_parcel
+                data:
+                  tracking_code: "{{ ai_result.data.tracking_code | trim }}"
+              - action: notify.mobile_app_your_phone
+                data:
+                  title: "📦 Amazon Shipping parcel picked up from mail (AI)"
+                  message: "{{ ai_result.data.tracking_code | trim }} (mail from {{ sender }})"
+          - conditions: "{{ ai_result.data.carrier == 'other' and (ai_result.data.tracking_code | default('') | trim) != '' }}"
+            sequence:
+              - action: notify.mobile_app_your_phone
+                data:
+                  title: "📦 Tracking number found – not an Amazon Shipping parcel"
+                  message: "{{ ai_result.data.tracking_code | trim }} (mail from {{ sender }}, subject: {{ subject }})"
