@@ -70,7 +70,8 @@ integration; do not add a login, an order scrape, or any account concept.
   unconfirmed shape.
 - **Status** is the summary's word unless it merely echoes the newest event
   code, then the newest mappable event; unmapped falls to the newest mappable
-  history event, the container tags (silently), then `unknown` with one WARNING.
+  history event, then the container tags, then `unknown` — with one WARNING for
+  every code that could not be mapped, the tags included.
   Seen codes are an exact map; unseen failure, return, pickup and customs codes
   are matched by wording in a fixed order (return and failure words before
   "delivered", which they contain) and each logs a one-shot WARNING because the

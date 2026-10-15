@@ -521,17 +521,19 @@ def test_unmapped_summary_alone_is_unknown_and_keeps_the_code():
     assert parcel["raw_status"] == "SOMETHING_NEW"
 
 
-def test_container_tags_are_the_last_resort_and_never_warn(caplog):
+def test_container_tags_are_the_last_resort_and_report_what_they_cannot_map(caplog):
     raw = envelope(
         "TBA000000000001",
         [],
         tags=["READY_FOR_RECEIVE", "DELIVERED_TO_DOORSTEP"],
     )
     raw["progressTracker"]["summary"]["status"] = None
-    parcel = normalize_parcel(raw)
+    with caplog.at_level("WARNING"):
+        parcel = normalize_parcel(raw)
     assert parcel["status"] == ParcelStatus.DELIVERED
     assert parcel["delivered_at"] is None  # no Delivered event, no deliveryDate
-    assert "READY_FOR_RECEIVE" not in caplog.text
+    # the tag that decided is mapped; the one before it was not, and is reported
+    assert "READY_FOR_RECEIVE" in caplog.text
 
 
 def test_delivered_without_a_delivered_event_uses_the_summary_date():

@@ -132,7 +132,9 @@ def classify_status(code: Any, *, warn: bool = True) -> ParcelStatus | None:
 
     ``None`` means the code is empty, a schedule flag, or unmapped. Codes
     mapped only by wording log a one-shot warning (the vocabulary behind them
-    is unconfirmed); so do unmapped ones, unless ``warn`` is false.
+    is unconfirmed); so do unmapped ones, unless ``warn`` is false. Nothing
+    passes ``warn=False`` today — it exists for a caller that can tell a
+    non-status label from an unrecognised one.
     """
     key = _key(code)
     if not key:
@@ -471,7 +473,7 @@ def _resolve_status(
         return status, code
 
     for tag in summary.get("containerStatusTags") or []:
-        status = classify_status(tag, warn=False)
+        status = classify_status(tag)
         if status is not None:
             return status, tag
     return ParcelStatus.UNKNOWN, summary_code or newest_code
