@@ -191,10 +191,8 @@ def parse_iso(value: str | None) -> datetime | None:
 def to_iso_timestamp(value: Any) -> str | None:
     """Return an ISO 8601 string for an API timestamp field.
 
-    Numbers are treated as **epoch milliseconds** — the common case for the
-    consumer APIs in this suite. Strings pass through untouched; their
-    consumers are guarded by :func:`parse_iso`. Adjust the numeric branch if
-    your carrier stamps in seconds.
+    Numbers are treated as epoch milliseconds. Strings pass through untouched;
+    their consumers are guarded by :func:`parse_iso`.
     """
     if value is None:
         return None
