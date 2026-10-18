@@ -54,7 +54,7 @@ async def test_request_carries_the_page_as_referer_and_a_browser_identity():
     assert url == "https://track.amazon.com/api/tracker/TBA000000000001"
     assert headers["Accept"] == "application/json"
     assert headers["Referer"] == "https://track.amazon.com/tracking/TBA000000000001"
-    assert headers["User-Agent"].startswith("Mozilla/5.0")
+    assert "User-Agent" not in headers
 
 
 @pytest.mark.parametrize(

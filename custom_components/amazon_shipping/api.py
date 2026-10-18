@@ -29,12 +29,6 @@ from .const import (
 )
 from .parcels import tracker_tld, warn_once
 
-# An ordinary browser identity: the tracker is the page's own XHR endpoint.
-_USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
-)
-
 # Answers that mean "this tracker does not serve that number".
 _NOT_SERVED_ERRORS = frozenset(
     {"TRACKING_ID_NOT_FOUND", "INVALID_TRACKING_ID", "ERROR_INVALID_OFF_AMAZON_ORDER"}
@@ -109,7 +103,6 @@ class AmazonShippingApiClient:
             "Accept": "application/json",
             "Accept-Language": "en-US,en;q=0.9",
             "Referer": TRACKING_URL.format(tld=tld, tracking_code=tracking_code),
-            "User-Agent": _USER_AGENT,
         }
         async with self._session.get(url, headers=headers) as response:
             if response.status == 429:
