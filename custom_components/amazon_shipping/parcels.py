@@ -525,6 +525,7 @@ def normalize_parcel(raw: dict, *, include_history: bool = False) -> dict:
     history_block = _as_dict(raw.get("eventHistory"))
     events = _ordered_events(history_block.get("eventHistory"), zone)
 
+    raw_status: str | None
     if is_history_expired(raw):
         # The IN_TRANSIT summary of an expired parcel is a placeholder.
         status, raw_status = ParcelStatus.UNKNOWN, HISTORY_EXPIRED_CODE

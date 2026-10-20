@@ -253,6 +253,10 @@ class _AmazonShippingPickupListSensor(
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_attribution = ATTRIBUTION
     _unrecorded_attributes = frozenset({"parcels"})
+    _suffix: str
+
+    def _parcels(self) -> list[dict]:
+        raise NotImplementedError
 
     def __init__(
         self, coordinator: AmazonShippingCoordinator, entry: ConfigEntry
