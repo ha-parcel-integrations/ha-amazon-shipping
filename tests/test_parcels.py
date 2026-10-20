@@ -4,6 +4,7 @@ These need no Home Assistant instance — the whole point of keeping
 ``parcels.py`` free of I/O is that the carrier-specific mapping can be tested
 as plain functions.
 """
+
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -185,8 +186,17 @@ def test_parse_event_time_accepts_date_only_iso_and_epoch():
 
 @pytest.mark.parametrize(
     "value",
-    [None, "", "yesterday", "Foo 8, 2026, 6:14:30 AM", "Oct 8, 2026, 13:00:00 PM",
-     "Feb 31, 2026, 6:14:30 AM", True, ["x"], 10**20],
+    [
+        None,
+        "",
+        "yesterday",
+        "Foo 8, 2026, 6:14:30 AM",
+        "Oct 8, 2026, 13:00:00 PM",
+        "Feb 31, 2026, 6:14:30 AM",
+        True,
+        ["x"],
+        10**20,
+    ],
 )
 def test_parse_event_time_rejects_garbage(value):
     assert parse_event_time(value) is None
@@ -249,8 +259,14 @@ def test_tracker_tld_without_a_code_is_com():
 
 
 def test_tracking_url_uses_the_regional_host():
-    assert tracking_url("UK0000000001") == "https://track.amazon.co.uk/tracking/UK0000000001"
-    assert tracking_url("TBA000000000001") == "https://track.amazon.com/tracking/TBA000000000001"
+    assert (
+        tracking_url("UK0000000001")
+        == "https://track.amazon.co.uk/tracking/UK0000000001"
+    )
+    assert (
+        tracking_url("TBA000000000001")
+        == "https://track.amazon.com/tracking/TBA000000000001"
+    )
     assert tracking_url(None) is None
 
 
@@ -265,7 +281,9 @@ def test_build_history_orders_oldest_to_newest_even_when_given_newest_first():
     assert [h["raw_status"] for h in history][0] == "CreationConfirmed"
     assert history[0]["status"] == ParcelStatus.REGISTERED
     assert history[-1]["status"] == ParcelStatus.DELIVERED
-    assert history[-1]["timestamp"] == "2026-04-29T13:12:42"  # naive: no zone is implied
+    assert (
+        history[-1]["timestamp"] == "2026-04-29T13:12:42"
+    )  # naive: no zone is implied
 
 
 def test_build_history_drops_exact_duplicates_and_keeps_source_order_on_ties():
@@ -480,7 +498,9 @@ def test_events_without_a_location_object_still_dedupe():
 
 
 def test_departed_without_any_out_for_delivery_is_in_transit():
-    raw = envelope("TBA000000000001", [event("Departed", at(29, 8, 0))], tracking_status="Departed")
+    raw = envelope(
+        "TBA000000000001", [event("Departed", at(29, 8, 0))], tracking_status="Departed"
+    )
     assert normalize_parcel(raw)["status"] == ParcelStatus.IN_TRANSIT
 
 
@@ -537,7 +557,11 @@ def test_container_tags_are_the_last_resort_and_report_what_they_cannot_map(capl
 
 
 def test_delivered_without_a_delivered_event_uses_the_summary_date():
-    raw = envelope("TBA000000000001", [event("Received", at(28, 3, 0))], tracking_status="DELIVERED")
+    raw = envelope(
+        "TBA000000000001",
+        [event("Received", at(28, 3, 0))],
+        tracking_status="DELIVERED",
+    )
     raw["progressTracker"]["summary"]["metadata"]["deliveryDate"] = {
         "date": "Apr 29, 2026, 1:12:42 PM",
         "type": "DATE",
@@ -580,7 +604,9 @@ def test_missing_expected_date_is_none_without_a_warning(caplog):
 def test_metadata_scalars_without_a_known_field_are_ignored():
     raw = active_sample()
     raw["progressTracker"]["expectedDeliveryDate"] = None
-    raw["progressTracker"]["summary"]["metadata"]["expectedDeliveryDate"] = {"type": "DATE"}
+    raw["progressTracker"]["summary"]["metadata"]["expectedDeliveryDate"] = {
+        "type": "DATE"
+    }
     assert normalize_parcel(raw)["planned_from"] is None
 
 

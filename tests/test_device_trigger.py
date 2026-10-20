@@ -1,4 +1,5 @@
 """Tests for Amazon Shipping device triggers."""
+
 from unittest.mock import AsyncMock
 
 from custom_components.amazon_shipping.const import DOMAIN

@@ -5,6 +5,7 @@ Only the structure mirrors the tracker. ``*_sample`` helpers return the parsed
 envelope the client hands to the coordinator; :func:`wire` turns one back into
 the on-the-wire form, where three fields are JSON strings inside the JSON.
 """
+
 from __future__ import annotations
 
 import copy
@@ -14,10 +15,17 @@ ACTIVE_CODE = "EXAMPLE999999"
 DELIVERED_CODE = "EXAMPLE123456"
 
 NNBSP = " "
-FACILITY = {"city": "Exampleton", "stateProvince": "EX", "countryCode": "US", "postalCode": "00000"}
+FACILITY = {
+    "city": "Exampleton",
+    "stateProvince": "EX",
+    "countryCode": "US",
+    "postalCode": "00000",
+}
 
 
-def at(day: int, hour: int, minute: int = 0, second: int = 0, month: str = "Apr") -> str:
+def at(
+    day: int, hour: int, minute: int = 0, second: int = 0, month: str = "Apr"
+) -> str:
     """A tracker timestamp: US long form with U+202F before AM/PM, no zone."""
     meridiem = "AM" if hour < 12 else "PM"
     clock = hour % 12 or 12
@@ -123,7 +131,12 @@ def delivered_sample(code: str = DELIVERED_CODE) -> dict:
             event("Received", at(28, 3, 52, 17)),
             event("Departed", at(28, 4, 5)),
             event("OutForDelivery", at(29, 8, 46), location={}),
-            event("Delivered", at(29, 13, 12, 42), location={}, subReasonCode="DELIVERED_TO_DOORSTEP"),
+            event(
+                "Delivered",
+                at(29, 13, 12, 42),
+                location={},
+                subReasonCode="DELIVERED_TO_DOORSTEP",
+            ),
         ],
         tracking_status="DELIVERED",
         expected="2026-04-29T20:00:00Z",

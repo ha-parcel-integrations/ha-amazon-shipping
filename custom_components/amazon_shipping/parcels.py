@@ -11,6 +11,7 @@ and :func:`normalize_parcel`. Everything else — the timestamp parsing, the
 history builder, the sort contract, the delivered filter, the one-shot
 warnings — is suite-wide machinery and should be left alone.
 """
+
 from __future__ import annotations
 
 import logging
@@ -227,7 +228,20 @@ def format_dimensions(
 _MONTHS = {
     name: number
     for number, name in enumerate(
-        ("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"),
+        (
+            "JAN",
+            "FEB",
+            "MAR",
+            "APR",
+            "MAY",
+            "JUN",
+            "JUL",
+            "AUG",
+            "SEP",
+            "OCT",
+            "NOV",
+            "DEC",
+        ),
         start=1,
     )
 }
@@ -340,7 +354,9 @@ def _ordered_events(events: Any, zone: ZoneInfo | None) -> list[dict]:
             continue
         moment = parse_event_time(event.get("eventTime"), zone)
         if moment is None:
-            warn_once("eventTime", "eventHistory[].eventTime has an unrecognised format")
+            warn_once(
+                "eventTime", "eventHistory[].eventTime has an unrecognised format"
+            )
             continue
         identity = (
             moment.isoformat(),
@@ -477,9 +493,7 @@ def _resolve_status(
     return ParcelStatus.UNKNOWN, summary_code or newest_code
 
 
-def _expected_moment(
-    tracker: dict, summary: dict, zone: ZoneInfo | None
-) -> str | None:
+def _expected_moment(tracker: dict, summary: dict, zone: ZoneInfo | None) -> str | None:
     """Return the expected delivery moment as an ISO string, or ``None``."""
     value = tracker.get("expectedDeliveryDate")
     if value is None:
@@ -488,7 +502,9 @@ def _expected_moment(
         return None
     moment = parse_event_time(value, zone)
     if moment is None:
-        warn_once("expectedDeliveryDate", "expectedDeliveryDate has an unrecognised format")
+        warn_once(
+            "expectedDeliveryDate", "expectedDeliveryDate has an unrecognised format"
+        )
         return None
     return moment.isoformat()
 
@@ -530,9 +546,7 @@ def normalize_parcel(raw: dict, *, include_history: bool = False) -> dict:
             delivered_at = moment.isoformat() if moment else None
 
     planned_from = (
-        None
-        if delivered or not tracker
-        else _expected_moment(tracker, summary, zone)
+        None if delivered or not tracker else _expected_moment(tracker, summary, zone)
     )
 
     return {
@@ -591,9 +605,7 @@ def apply_delivered_filter(parcels: list[dict], entry: ConfigEntry) -> list[dict
     shows.
     """
     options = entry.options
-    filter_type = options.get(
-        CONF_DELIVERED_FILTER_TYPE, DEFAULT_DELIVERED_FILTER_TYPE
-    )
+    filter_type = options.get(CONF_DELIVERED_FILTER_TYPE, DEFAULT_DELIVERED_FILTER_TYPE)
     amount = int(
         options.get(CONF_DELIVERED_FILTER_AMOUNT, DEFAULT_DELIVERED_FILTER_AMOUNT)
     )

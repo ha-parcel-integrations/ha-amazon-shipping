@@ -1,4 +1,5 @@
 """Tests for the Amazon Shipping API client."""
+
 import json
 from unittest.mock import AsyncMock, MagicMock
 
@@ -16,7 +17,9 @@ from .payloads import active_sample, delivered_sample, expired, not_found, wire
 CODE = "EXAMPLE123456"
 
 
-def _session_returning(status: int, body: object = None, headers: dict | None = None) -> MagicMock:
+def _session_returning(
+    status: int, body: object = None, headers: dict | None = None
+) -> MagicMock:
     response = AsyncMock()
     response.status = status
     response.headers = headers or {}
@@ -72,7 +75,9 @@ async def test_host_follows_the_code_prefix(code, host):
     session = _session_returning(200, wire(active_sample()))
     await AmazonShippingApiClient(session).async_get_parcel(code)
     assert session.get.call_args[0][0].startswith(f"https://{host}/api/tracker/")
-    assert session.get.call_args.kwargs["headers"]["Referer"].startswith(f"https://{host}/")
+    assert session.get.call_args.kwargs["headers"]["Referer"].startswith(
+        f"https://{host}/"
+    )
 
 
 async def test_mcf_source_is_served():
@@ -84,7 +89,8 @@ async def test_mcf_source_is_served():
 
 
 @pytest.mark.parametrize(
-    "error", ["TRACKING_ID_NOT_FOUND", "INVALID_TRACKING_ID", "ERROR_INVALID_OFF_AMAZON_ORDER"]
+    "error",
+    ["TRACKING_ID_NOT_FOUND", "INVALID_TRACKING_ID", "ERROR_INVALID_OFF_AMAZON_ORDER"],
 )
 async def test_unserved_numbers_are_not_found_without_a_warning(error, caplog):
     assert await _client(wire(not_found(error=error))).async_get_parcel(CODE) is None
@@ -193,7 +199,9 @@ async def test_429_carries_retry_after_seconds():
     assert err.value.retry_after == 120.0
 
 
-@pytest.mark.parametrize("headers", [{}, {"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"}])
+@pytest.mark.parametrize(
+    "headers", [{}, {"Retry-After": "Wed, 21 Oct 2026 07:28:00 GMT"}]
+)
 async def test_429_without_seconds_has_no_retry_after(headers):
     client = AmazonShippingApiClient(_session_returning(429, {}, headers))
     with pytest.raises(AmazonShippingApiError) as err:

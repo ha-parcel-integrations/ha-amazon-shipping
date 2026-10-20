@@ -4,6 +4,7 @@ Fetching and event firing only — the parcel mapping lives in :mod:`.parcels`.
 That split is what lets the account-based variant swap this file out without
 duplicating the mapping code.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -181,9 +182,9 @@ class AmazonShippingCoordinator(DataUpdateCoordinator[list[dict]]):
         # that already existed when the integration started — otherwise every
         # restart would flood users with "registered" notifications.
         self._known_state: dict[str, ParcelStatus] | None = None
-        self._known_delivery_times: (
-            dict[str, tuple[str | None, str | None]] | None
-        ) = None
+        self._known_delivery_times: dict[str, tuple[str | None, str | None]] | None = (
+            None
+        )
         # Cached device id, attached to every fired event so device-trigger
         # automations can filter to this device.
         self._cached_device_id: str | None = None
@@ -232,9 +233,7 @@ class AmazonShippingCoordinator(DataUpdateCoordinator[list[dict]]):
     def _include_history(self) -> bool:
         """Whether the opt-in per-parcel history option is enabled."""
         return bool(
-            self.config_entry.options.get(
-                CONF_INCLUDE_HISTORY, DEFAULT_INCLUDE_HISTORY
-            )
+            self.config_entry.options.get(CONF_INCLUDE_HISTORY, DEFAULT_INCLUDE_HISTORY)
         )
 
     async def _async_update_data(self) -> list[dict]:
@@ -341,7 +340,9 @@ class AmazonShippingCoordinator(DataUpdateCoordinator[list[dict]]):
         # flipped to delivered is skipped starting next cycle; one that
         # somehow un-delivers (should not happen, but the fetch list must
         # never permanently drop a code) rejoins it automatically.
-        self._delivered_codes = {code for code, parcel in entries if parcel["delivered"]}
+        self._delivered_codes = {
+            code for code, parcel in entries if parcel["delivered"]
+        }
         self._expired_codes = {
             code
             for code, parcel in entries

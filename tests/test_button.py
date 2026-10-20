@@ -1,4 +1,5 @@
 """Tests for the Amazon Shipping refresh button."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 from custom_components.amazon_shipping.button import AmazonShippingRefreshButton

@@ -2,6 +2,7 @@
 
 The parcel mapping itself is covered by ``test_parcels.py``.
 """
+
 from unittest.mock import AsyncMock
 
 import pytest
@@ -214,7 +215,9 @@ async def test_schema_error_keeps_the_last_good_state(hass):
 
     client.async_get_parcel.return_value = active_sample()
     await coordinator._async_update_data()
-    client.async_get_parcel.side_effect = AmazonShippingApiError("progressTracker is missing")
+    client.async_get_parcel.side_effect = AmazonShippingApiError(
+        "progressTracker is missing"
+    )
     data = await coordinator._async_update_data()
 
     assert data[0]["status"] == ParcelStatus.OUT_FOR_DELIVERY
@@ -227,8 +230,8 @@ async def test_delivered_code_skipped_from_fetch(hass):
     )
     entry.add_to_hass(hass)
     client = AsyncMock()
-    client.async_get_parcel.side_effect = (
-        lambda code: active_sample(code) if code == ACTIVE_CODE else delivered_sample()
+    client.async_get_parcel.side_effect = lambda code: (
+        active_sample(code) if code == ACTIVE_CODE else delivered_sample()
     )
     coordinator = AmazonShippingCoordinator(hass, client, entry)
 
@@ -349,9 +352,7 @@ async def test_event_carries_device_id(hass):
     coordinator = AmazonShippingCoordinator(hass, client, entry)
 
     events = []
-    hass.bus.async_listen(
-        f"{DOMAIN}_parcel_status_changed", lambda e: events.append(e)
-    )
+    hass.bus.async_listen(f"{DOMAIN}_parcel_status_changed", lambda e: events.append(e))
 
     client.async_get_parcel.return_value = _in_transit()
     await coordinator._async_update_data()
@@ -369,9 +370,7 @@ async def test_fires_status_changed_event(hass):
     coordinator = AmazonShippingCoordinator(hass, client, entry)
 
     events = []
-    hass.bus.async_listen(
-        f"{DOMAIN}_parcel_status_changed", lambda e: events.append(e)
-    )
+    hass.bus.async_listen(f"{DOMAIN}_parcel_status_changed", lambda e: events.append(e))
 
     client.async_get_parcel.return_value = _in_transit()
     await coordinator._async_update_data()  # first refresh: suppressed

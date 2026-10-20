@@ -33,7 +33,9 @@ def test_valid_tracking_code_accepts_any_shape_of_the_right_length(code):
     assert valid_tracking_code(code)
 
 
-@pytest.mark.parametrize("code", ["", "ABC", "A" * 7, "A" * 41, "ABC_12345", "abcdefgh"])
+@pytest.mark.parametrize(
+    "code", ["", "ABC", "A" * 7, "A" * 41, "ABC_12345", "abcdefgh"]
+)
 def test_valid_tracking_code_rejects_wrong_length_or_characters(code):
     assert not valid_tracking_code(code)
 

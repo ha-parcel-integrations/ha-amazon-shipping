@@ -1,4 +1,5 @@
 """Tests for Amazon Shipping setup and unload."""
+
 from unittest.mock import AsyncMock, patch
 
 from homeassistant.config_entries import ConfigEntryState
@@ -67,7 +68,9 @@ async def test_setup_retries_when_first_refresh_fails(hass):
 
     with patch(
         "custom_components.amazon_shipping.api.AmazonShippingApiClient.async_get_parcel",
-        new=AsyncMock(side_effect=AmazonShippingApiError("Amazon Shipping unreachable")),
+        new=AsyncMock(
+            side_effect=AmazonShippingApiError("Amazon Shipping unreachable")
+        ),
     ):
         assert not await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
@@ -84,7 +87,10 @@ async def test_per_parcel_sensor_spawn_and_remove(hass):
     entry.add_to_hass(hass)
 
     mock = AsyncMock(return_value=_sample())
-    with patch("custom_components.amazon_shipping.api.AmazonShippingApiClient.async_get_parcel", new=mock):
+    with patch(
+        "custom_components.amazon_shipping.api.AmazonShippingApiClient.async_get_parcel",
+        new=mock,
+    ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 
@@ -120,7 +126,10 @@ async def test_options_update_applies_live_without_reload(hass):
     entry.add_to_hass(hass)
 
     mock = AsyncMock(return_value=_sample())
-    with patch("custom_components.amazon_shipping.api.AmazonShippingApiClient.async_get_parcel", new=mock):
+    with patch(
+        "custom_components.amazon_shipping.api.AmazonShippingApiClient.async_get_parcel",
+        new=mock,
+    ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
 

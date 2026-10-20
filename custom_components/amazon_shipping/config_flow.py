@@ -32,6 +32,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def normalize_tracking_code(value: str) -> str:
     """Return the tracking code upper-cased with spaces, dots and dashes removed."""
     return re.sub(r"[\s.\-]+", "", (value or "").upper())

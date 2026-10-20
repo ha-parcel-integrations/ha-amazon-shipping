@@ -1,4 +1,5 @@
 """Tests for Amazon Shipping diagnostics."""
+
 from datetime import timedelta
 from unittest.mock import MagicMock
 
