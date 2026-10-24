@@ -6,7 +6,7 @@ full-stop condition, its resume, and the 429 backoff).
 """
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from homeassistant.helpers.update_coordinator import UpdateFailed
@@ -226,3 +226,26 @@ async def test_429_backoff_grows_without_a_retry_after_header(hass):
 
     assert first.value.retry_after is not None
     assert second.value.retry_after > first.value.retry_after
+
+
+async def test_failed_poll_drops_the_overnight_interval(hass):
+    entry = _entry_with([{CONF_TRACKING_CODE: ACTIVE_CODE}])
+    entry.add_to_hass(hass)
+    coordinator = AmazonShippingCoordinator(hass, AsyncMock(), entry)
+    coordinator.update_interval = timedelta(hours=5, minutes=40)
+
+    noon = datetime(2026, 1, 15, 12, tzinfo=UTC)
+    with (
+        patch.object(coordinator, "_async_poll", side_effect=TimeoutError),
+        patch(
+            "custom_components.amazon_shipping.coordinator.dt_util.now",
+            return_value=noon,
+        ),
+        pytest.raises(TimeoutError),
+    ):
+        await coordinator._async_update_data()
+
+    assert coordinator.update_interval is not None
+    assert coordinator.update_interval <= timedelta(
+        minutes=MID_INTERVAL_MINUTES + STAGGER_MINUTES
+    )
