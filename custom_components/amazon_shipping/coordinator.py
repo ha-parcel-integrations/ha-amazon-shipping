@@ -368,15 +368,15 @@ class AmazonShippingCoordinator(DataUpdateCoordinator[list[dict]]):
             if not parcel["delivered"] and is_history_expired(parcel["raw"])
         }
 
-        self.delivered = apply_delivered_filter(
-            sort_parcels_by_ts(delivered, "delivered_at", descending=True),
-            self.config_entry,
+        delivered_sorted = sort_parcels_by_ts(
+            delivered, "delivered_at", descending=True
         )
+        self.delivered = apply_delivered_filter(delivered_sorted, self.config_entry)
         normalized_active = sort_parcels_by_ts(active, "planned_from")
 
-        # Incoming = active + delivered, combined so the transition to
-        # delivered is visible in one set.
-        incoming = normalized_active + self.delivered
+        # Events and remembered state cover every parcel; the retention option
+        # only limits what the delivered sensor shows.
+        incoming = normalized_active + delivered_sorted
         self._fire_change_events(incoming)
         self._known_state = {
             parcel["barcode"]: parcel["status"]
