@@ -126,6 +126,7 @@ Standard HA removal applies: **Settings → Devices & Services → Amazon Shippi
 | `sensor.amazon_shipping_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.amazon_shipping_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
 | `sensor.amazon_shipping_next_delivery` | Earliest expected delivery moment across all active parcels |
+| `sensor.amazon_shipping_en_route_to_pickup_point` | Incoming parcels on their way to a pickup point that have not arrived yet |
 | `sensor.amazon_shipping_awaiting_pickup` | Incoming parcels that are ready to collect at a pickup point |
 | `sensor.amazon_shipping_delivered_parcels` | Recently delivered parcels (see the retention option) |
 | `calendar.amazon_shipping_deliveries` | Read-only calendar of expected deliveries, no extra API calls |
