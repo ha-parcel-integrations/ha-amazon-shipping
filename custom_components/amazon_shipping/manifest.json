@@ -1,6 +1,7 @@
 {
   "domain": "amazon_shipping",
   "name": "Amazon Shipping",
+  "categories": ["productivity_information"],
   "codeowners": [
     "@peter-mdf"
   ],
