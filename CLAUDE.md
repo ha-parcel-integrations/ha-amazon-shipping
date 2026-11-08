@@ -65,9 +65,8 @@ integration; do not add a login, an order scrape, or any account concept.
   exists but has no history with a placeholder `IN_TRANSIT` summary. It is never
   mapped: status is `unknown`, the code leaves the fetch list and the polling
   tier (`coordinator.expired_codes`), and polling stops when nothing else is
-  waiting. The sensor stays, served from the cache. No expired reply has been
-  seen on the wire, so the branch logs a one-shot WARNING like any other
-  unconfirmed shape.
+  waiting. The sensor stays, served from the cache. Confirmed on a real
+  parcel, so the branch is silent — it no longer asks to be reported.
 - **Status** is the summary's word unless it merely echoes the newest event
   code, then the newest mappable event; unmapped falls to the newest mappable
   history event, then the container tags, then `unknown` — with one WARNING for
@@ -106,10 +105,10 @@ integration; do not add a login, an order scrape, or any account concept.
   the standard dynamic polling applies unchanged. A diverging cadence needs
   observed throttling and a note here.
 - **Pre-1.0:** failed-attempt, return, pickup-point and customs codes, an MCF
-  parcel, an expired reply and the `.it`/`.es`/`.fr` hosts for a served parcel
-  are unseen. Every unmapped code, unexpected `trackerSource`/error code and
-  changed envelope logs a one-shot WARNING with the issue link: keys and codes
-  only, never values.
+  parcel and the `.it`/`.es`/`.fr` hosts for a served parcel are unseen;
+  `CANCELLED_BY_CARRIER` and an expired reply are confirmed. Every unmapped
+  code, unexpected `trackerSource`/error code and changed envelope logs a
+  one-shot WARNING with the issue link: keys and codes only, never values.
 - Out of scope: addresses, proof-of-delivery image handling, discovery or batch
   guessing, browser automation, third-party trackers.
 

@@ -66,6 +66,7 @@ from .payloads import (
         ("Delivered", ParcelStatus.DELIVERED),
         ("DELIVERED", ParcelStatus.DELIVERED),
         ("DELIVERED_TO_DOORSTEP", ParcelStatus.DELIVERED),
+        ("CANCELLED_BY_CARRIER", ParcelStatus.PROBLEM),
     ],
 )
 def test_seen_codes_map_without_a_warning(code, expected, caplog):

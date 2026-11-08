@@ -140,13 +140,6 @@ class AmazonShippingApiClient:
         ]
 
         if HISTORY_EXPIRED_CODE in errors:
-            # Pre-1.0: no expired reply has been seen on the wire, so the
-            # branch that handles it is unconfirmed and asks to be reported.
-            warn_once(
-                f"error:{HISTORY_EXPIRED_CODE}",
-                f"progressTracker error code={HISTORY_EXPIRED_CODE} "
-                "(history expired — tracking stops for this code)",
-            )
             return envelope
 
         source = tracker.get("trackerSource")

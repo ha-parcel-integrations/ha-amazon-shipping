@@ -82,7 +82,8 @@ TRACKING_URL = "https://track.amazon.{tld}/tracking/{tracking_code}"
 SERVED_TRACKER_SOURCES = frozenset({"SWA", "MCF"})
 
 # The one error code that means "the parcel exists, its history is gone". Its
-# summary is a placeholder and must never be mapped to a status.
+# summary is a placeholder and must never be mapped to a status. Seen on a real
+# parcel, so the branch no longer warns.
 HISTORY_EXPIRED_CODE = "SHIPMENT_OLDER_THAN_SUPPORTED_AGE"
 
 # Tracking codes are 8-40 characters of A-Z0-9 once normalised.

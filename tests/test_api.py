@@ -122,13 +122,9 @@ async def test_expired_history_is_returned_not_hidden_as_not_found():
     assert is_history_expired(parcel)
 
 
-async def test_expired_history_warns_once_as_an_unseen_shape(caplog):
-    """Pre-1.0: no expired reply has been seen, so it has to ask to be seen."""
+async def test_expired_history_is_confirmed_and_does_not_warn(caplog):
+    """Seen on a real parcel: the branch is handled, so it asks for nothing."""
     parcel = await _client(wire(expired())).async_get_parcel(CODE)
-    assert "issues/new?template=unrecognised_status.yml" in caplog.text
-    assert CODE not in caplog.text
-    caplog.clear()
-    await _client(wire(expired())).async_get_parcel(CODE)
     assert caplog.text == ""
     assert is_history_expired(parcel)
 

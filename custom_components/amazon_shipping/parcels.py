@@ -56,6 +56,7 @@ _STATUS_MAP: dict[str, ParcelStatus] = {
     "OUTFORDELIVERY": ParcelStatus.OUT_FOR_DELIVERY,
     "DELIVERED": ParcelStatus.DELIVERED,
     "DELIVEREDTODOORSTEP": ParcelStatus.DELIVERED,
+    "CANCELLEDBYCARRIER": ParcelStatus.PROBLEM,
 }
 
 # Codes never seen on the wire, matched by wording. Order matters: return and
