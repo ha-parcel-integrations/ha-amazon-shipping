@@ -38,7 +38,8 @@ KNOWN_CAPABILITIES = frozenset(
 
 # Every value not listed here comes back as a literal ``None`` from
 # normalize_parcel() — receiver, weight and dimensions are never in the
-# payload. ``delivery_window`` is a single expected moment (``planned_from``).
+# payload. ``delivery_window`` is a single expected moment (``planned_from``) running
+# to the end of that day (``planned_to``).
 # ``sender`` is populated but is not one of the contract's capability keys.
 CAPABILITIES = frozenset({"delivery_window", "url", "history"})
 

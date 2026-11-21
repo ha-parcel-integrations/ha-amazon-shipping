@@ -35,13 +35,15 @@ you act in one of these areas:
   summary+diagnostic sensors. Add a new non-parcel sensor's unique_id to the set.
 - **Per-parcel sensors are removed by the summary sensor** via
   `entity_registry.async_remove` (self-removal races and leaves ghosts).
-- **The optional pickup-point summaries are a pair.** A carrier that can tell
-  a parcel is destined for a pickup point exposes
-  `en_route_to_pickup_point` for `pickup is true` before it arrives; one that
-  can reach `ParcelStatus.AT_PICKUP_POINT` also exposes `awaiting_pickup`.
+- **The pickup-point summaries are a pair.** A carrier that can deliver to a
+  pickup point or locker exposes both `en_route_to_pickup_point` and
+  `awaiting_pickup`, even before a real parcel has shown the status or flag
+  (they read 0 until then; record it in `PENDING_*`). A carrier without pickup
+  points exposes neither and keeps `pickup` constantly False.
   See *Parcel contract* in `CONVENTIONS.md`. Say "pickup point", not
   "ServicePoint"/"parcel shop"/"locker", for the generic concept; the
   example carrier demonstrates both canonical sensors.
+  This repo exposes both.
 
 ## Carrier-specific notes
 
@@ -94,8 +96,19 @@ integration; do not add a login, an order scrape, or any account concept.
   keys, so `CAPABILITIES` does not list it.
 - **Fields that are `None` on purpose:** `receiver`, `weight`,
   `dimensions` (never in the payload) and `pickup_point` (awaiting data, see
-  `PENDING_CAPABILITIES`). `planned_to` is always `None`: the tracker gives one
-  expected moment, and a delivered parcel drops it.
+  `PENDING_CAPABILITIES`).
+- **Delivery window:** the tracker gives one expected moment, so `planned_from`
+  is that moment and `planned_to` the end of the same day, via
+  `planned_window` in UK/GB London time and otherwise Home Assistant's zone
+  (naive wall clocks are never stamped UTC). `planned_for_status` empties it at
+  `at_pickup_point`, `returning` and `delivered`. US parcels put the expected
+  date at 03:00 the day after the promised day, which is a day marker, not a
+  delivery time; it is published as the tracker sends it.
+- **Pickup:** the tracker has no pickup-point field, so `pickup` is only known
+  once the parcel has reached `AT_PICKUP_POINT` (`is_pickup`), and stays `True`
+  after collection. `en_route_to_pickup_point` is exposed anyway and reads 0 until
+  the tracker shows a pickup flag before arrival (pending); `awaiting_pickup`
+  counts wording-matched codes that map to `AT_PICKUP_POINT`.
 - **`raw` is the full parsed envelope.** Privacy lives in `diagnostics.py`
   alone, which redacts the whole record, locations, timestamps and the shipper.
 - **No outgoing support, deliberately.** Amazon Shipping is a seller-side

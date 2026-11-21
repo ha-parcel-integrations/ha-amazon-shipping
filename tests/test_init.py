@@ -98,6 +98,10 @@ async def test_per_parcel_sensor_spawn_and_remove(hass):
         assert registry.async_get_entity_id(
             "sensor", DOMAIN, f"{entry.entry_id}_{ACTIVE_CODE}"
         )
+        for suffix in ("en_route_to_pickup_point", "awaiting_pickup"):
+            assert registry.async_get_entity_id(
+                "sensor", DOMAIN, f"{entry.entry_id}_{suffix}"
+            )
 
         # The next poll returns a different tracking code: the summary sensor
         # spawns a new per-parcel sensor and removes the stale one.

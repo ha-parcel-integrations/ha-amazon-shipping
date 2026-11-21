@@ -417,13 +417,13 @@ def test_normalize_history_is_opt_in():
     assert parcel["history"][0]["status"] == ParcelStatus.REGISTERED
 
 
-def test_normalize_active_parcel_has_a_single_expected_moment():
+def test_normalize_active_parcel_runs_to_the_end_of_the_expected_day():
     parcel = normalize_parcel(active_sample())
     assert parcel["status"] == ParcelStatus.OUT_FOR_DELIVERY
     assert parcel["raw_status"] == "OutForDelivery"
     assert parcel["delivered"] is False
     assert parcel["planned_from"] == "2026-04-29T13:00:00+00:00"
-    assert parcel["planned_to"] is None
+    assert "T23:59:59" in parcel["planned_to"]
 
 
 def test_normalize_delayed_uk_parcel_falls_through_to_its_one_event():
@@ -580,13 +580,17 @@ def test_expected_date_falls_back_to_summary_metadata():
     raw["progressTracker"]["summary"]["metadata"]["expectedDeliveryDate"] = {
         "date": "Apr 30, 2026"
     }
-    assert normalize_parcel(raw)["planned_from"] == "2026-04-30T00:00:00"
+    parcel = normalize_parcel(raw)
+    assert parcel["planned_from"].startswith("2026-04-30T00:00:00")
+    assert parcel["planned_to"].startswith("2026-04-30T23:59:59")
 
 
 def test_expected_date_accepts_the_us_long_form_and_epoch():
     raw = active_sample()
     raw["progressTracker"]["expectedDeliveryDate"] = "Apr 30, 2026, 5:00:00\u202fPM"
-    assert normalize_parcel(raw)["planned_from"] == "2026-04-30T17:00:00"
+    parcel = normalize_parcel(raw)
+    assert parcel["planned_from"].startswith("2026-04-30T17:00:00")
+    assert parcel["planned_to"].startswith("2026-04-30T23:59:59")
     raw["progressTracker"]["expectedDeliveryDate"] = 1777554000000
     assert normalize_parcel(raw)["planned_from"].endswith("+00:00")
 
