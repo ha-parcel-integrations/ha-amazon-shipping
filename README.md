@@ -42,6 +42,7 @@ This is not an Amazon account integration: it does not read your Amazon orders. 
 - Summary sensors: incoming parcels, next delivery, recently delivered parcels
 - Read-only **Deliveries** calendar with the expected delivery windows
 - `amazon_shipping.track_parcel` / `amazon_shipping.untrack_parcel` services, so a dashboard button can add a parcel
+- A `contents` note per parcel (`amazon_shipping.update_contents`) that titles its calendar event and shows on the next-delivery sensor
 - Events + device triggers for no-code automations (parcel registered, status changed, delivered, delivery time changed)
 - Opt-in per-parcel status history
 - Manual refresh button and a diagnostic last-update sensor
@@ -170,8 +171,11 @@ Every payload is the full normalised parcel plus the hub's `device_id`. Events a
 
 | Service | Fields | Description |
 |---|---|---|
-| `amazon_shipping.track_parcel` | `tracking_code` | Start tracking a parcel |
+| `amazon_shipping.track_parcel` | `tracking_code`, `contents` (optional) | Start tracking a parcel |
 | `amazon_shipping.untrack_parcel` | `tracking_code` | Stop tracking a parcel |
+| `amazon_shipping.update_contents` | `tracking_code`, `contents` | Set, replace or clear (empty text) a note on what is in a parcel |
+
+The `contents` text is stored locally, never sent to Amazon, and fills the parcel's `contents` field; it titles the parcel's calendar event and shows on the next-delivery sensor.
 
 ## Examples
 

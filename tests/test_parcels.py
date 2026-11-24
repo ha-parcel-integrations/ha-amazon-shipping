@@ -337,6 +337,7 @@ CANONICAL_KEYS = [
     "barcode",
     "sender",
     "receiver",
+    "contents",
     "status",
     "raw_status",
     "delivered",
@@ -405,7 +406,7 @@ def test_normalize_delivered_parcel():
     assert parcel["planned_to"] is None
     assert parcel["url"] == "https://track.amazon.fr/tracking/EXAMPLE123456"
     assert parcel["sender"] == "Example Shipper"
-    for field in ("receiver", "pickup_point", "weight", "dimensions"):
+    for field in ("receiver", "contents", "pickup_point", "weight", "dimensions"):
         assert parcel[field] is None
     assert parcel["pickup"] is False
     assert parcel["history"] is None  # opt-in, default off

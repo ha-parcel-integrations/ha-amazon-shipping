@@ -19,6 +19,7 @@ async def test_diagnostics_redacts_and_counts(hass):
             "barcode": "EXAMPLE123456",
             "sender": "Example Shop",
             "receiver": "Jane Doe",
+            "contents": "Running shoes",
             "status": "out_for_delivery",
             "planned_from": "2026-04-29T13:00:00+00:00",
             "history": [{"timestamp": "2026-04-29T08:46:00", "status": None}],
@@ -58,6 +59,7 @@ async def test_diagnostics_redacts_and_counts(hass):
     assert result["entry_options"]["parcels"][0]["tracking_code"] == "**REDACTED**"
     assert result["incoming"][0]["barcode"] == "**REDACTED**"
     assert result["incoming"][0]["receiver"] == "**REDACTED**"
+    assert result["incoming"][0]["contents"] == "**REDACTED**"
     # the whole record goes, so nothing inside it can leak a name or a facility
     assert result["incoming"][0]["raw"] == "**REDACTED**"
     assert result["incoming"][0]["planned_from"] == "**REDACTED**"
